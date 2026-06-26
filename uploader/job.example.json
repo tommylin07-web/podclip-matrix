@@ -1,0 +1,10 @@
+{
+  "video": "../clips/ep12/c1_demo_remotion.mp4",
+  "shortTitle": "短标题≤16字",
+  "desc": "视频号描述/正文。",
+  "topics": ["话题一", "话题二"],
+  "collection": "你的合集名（需先在视频号后台建好，否则跳过）",
+  "product": "微信小店商品名或关键词（可选）",
+  "cover": "../clips/covers/ep12_c1.png",
+  "publish": false
+}

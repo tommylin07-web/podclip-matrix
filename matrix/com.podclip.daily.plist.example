@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- macOS 每日自动运行。用法：
+     1) 把 __ABS_PATH__ 改成你的仓库绝对路径（如 /Users/you/podclip-matrix）
+     2) cp 到 ~/Library/LaunchAgents/com.podclip.daily.plist
+     3) launchctl load ~/Library/LaunchAgents/com.podclip.daily.plist
+     每天 10:00 自动渲染+发布。Linux 用 cron 代替。 -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.podclip.daily</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__ABS_PATH__/matrix/daily_run.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>__ABS_PATH__/logs/daily.out.log</string>
+  <key>StandardErrorPath</key><string>__ABS_PATH__/logs/daily.err.log</string>
+  <key>RunAtLoad</key><false/>
+</dict>
+</plist>

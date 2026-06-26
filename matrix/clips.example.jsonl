@@ -1,0 +1,3 @@
+# 待发布切片库（render_clips.sh 渲染成功后自动追加；也可手填）。
+# 每行：id / video(相对仓库根) / cover / title / desc / tags
+{"id":"ep12_c1","video":"clips/ep12/c1_demo_remotion.mp4","cover":"clips/covers/ep12_c1.png","title":"发布用的标题：一个反常识的点","desc":"正文示例。完整一期搜「你的播客名」。","tags":"标签一,标签二,你的播客名"}

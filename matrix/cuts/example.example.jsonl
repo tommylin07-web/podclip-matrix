@@ -1,0 +1,13 @@
+# 切片定义示例：每行一个片段。把文件命名为 ep<期号>.jsonl（如 ep12.jsonl）放在 cuts/ 下。
+# 字段：
+#   id         唯一片段ID（建议 ep<N>_c<n>）
+#   name       输出文件名（clips/ep<N>/<name>_remotion.mp4）
+#   start/end  在整期音频里的起止秒
+#   label      封面左上角标签（如 "EP12 · 育儿"）
+#   title      视频内常驻标题/封面卡大字
+#   hook       片内钩子（可与 title 同）
+#   cover_hook 3:4 封面大字，\n 换行，||词|| 高亮
+#   pub_title  发布到各平台用的标题
+#   desc       发布正文/简介
+#   tags       逗号分隔标签
+{"id":"ep12_c1","name":"c1_demo","start":95,"end":143,"label":"EP12 · 主题","title":"一句话钩子标题","hook":"一句话钩子","cover_hook":"封面大字\n||高亮词||","pub_title":"发布用的标题：一个反常识的点","desc":"这里写正文：用一句钩子开头 + 简短复述这段的核心。完整一期搜「你的播客名」。","tags":"标签一,标签二,标签三,你的播客名"}

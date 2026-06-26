@@ -1,0 +1,7 @@
+{
+  "audio": "../data/audio/ep12.mp3",
+  "title": "整集标题（≤30字）",
+  "desc": "音频号描述/简介。",
+  "topics": ["话题一", "话题二"],
+  "publish": false
+}

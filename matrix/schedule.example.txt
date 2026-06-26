@@ -1,0 +1,5 @@
+# 发布排期（可选）：每行  日期(YYYY-MM-DD)  切片ID  [平台,可选]
+# daily_run.sh 当天有排期就按排期发；没有则从 clips.jsonl 自动挑没发过的前 DAILY_COUNT 条。
+# 第3列可指定平台覆盖默认值（默认 xiaohongshu,weixin,youtube）。
+2026-07-01 ep12_c1
+2026-07-02 ep12_c2 xiaohongshu,weixin
