@@ -5,7 +5,8 @@
 #   强制重发已成功平台: FORCE=1 ...
 # 配置(环境变量): SAU_ACCOUNT(默认 default) SAU_DIR(默认 ~/social-auto-upload)
 #   MAX_ATTEMPTS(默认 3): 同一切片同一平台"真·上传失败"连续达到该次数后标记 giving_up，选片侧视同已处理。
-#     登录/cookie 类失效不计入该上限（属可修复的瞬时故障，修好登录后自动重试，不会被误判放弃）。
+#     瞬时故障（登录/cookie 失效、YouTube 配额超限、限流、服务端 5xx）不计入该上限，
+#     属可自行恢复的问题，恢复后自动重试，不会被误判放弃。
 #
 # 幂等保证: 发布前会查 publish_status.json，某平台已 ok:true 就跳过（除非 FORCE=1），
 #   避免"一个平台失败导致另一个已成功平台被无限重发"。
@@ -82,8 +83,9 @@ rec=(d.get(os.environ["ID"],{}) or {}).get(os.environ["PLAT"],{}) or {}
 sys.exit(0 if rec.get("ok") else 1)
 ' 2>/dev/null
 }
-# 登录/cookie 类失败的识别特征（与 daily_run.sh 的登录过期通知保持一致）。
-LOGIN_ERR_RE='cookie.*(missing|expired|失效)|请先.*(登录|login)|未登录|(登录|token).*(过期|失效)|not logged in|login required|need.*login|unauthorized|401'
+# 瞬时/可恢复故障的识别特征：登录 cookie 失效、YouTube 配额/限流、服务端 5xx。
+# 命中则记失败但不计入重试上限（恢复后自动重试），不误判为坏片放弃。
+TRANSIENT_ERR_RE='cookie.*(missing|expired|失效)|请先.*(登录|login)|未登录|(登录|token).*(过期|失效)|not logged in|login required|need.*login|unauthorized|(^|[^0-9])401([^0-9]|$)|quota|配额|rate.?limit|dailylimit|uploadlimit|(^|[^0-9])429([^0-9]|$)|server error'
 pubrun(){ # platform cmd...
   local plat="$1"; shift
   if [ "${FORCE:-0}" != "1" ] && already_ok "$plat"; then
@@ -96,9 +98,9 @@ pubrun(){ # platform cmd...
   [ -n "$out" ] && printf '%s\n' "$out"        # 原样透传输出（daily_run 靠它识别登录过期并通知）
   if [ $rc -eq 0 ]; then
     r=$(record "$plat" 1 1); echo "  ✓ $plat 成功"
-  elif printf '%s' "$out" | grep -qiE "$LOGIN_ERR_RE"; then
-    record "$plat" 0 0 >/dev/null              # 登录/cookie 失效：记失败但不计入重试上限
-    echo "  ✗ $plat 失败：疑似登录/cookie 失效，不计入重试上限（修好登录后会自动重试）"
+  elif printf '%s' "$out" | grep -qiE "$TRANSIENT_ERR_RE"; then
+    record "$plat" 0 0 >/dev/null              # 瞬时故障（登录/配额/限流/5xx）：记失败但不计入重试上限
+    echo "  ✗ $plat 失败：疑似瞬时故障（登录/配额/限流/服务端），不计入重试上限（恢复后会自动重试）"
   else
     r=$(record "$plat" 0 1)                     # 真·上传失败：计数
     if [ "$r" = "giving_up" ]; then
