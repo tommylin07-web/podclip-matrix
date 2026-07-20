@@ -24,18 +24,21 @@ notify(){
   [ -s "$kf" ] && curl -s "https://sctapi.ftqq.com/$(cat "$kf").send" --data-urlencode "title=$1" --data-urlencode "desp=$2" >/dev/null 2>&1 || true
 }
 
-# 紧急止血开关：存在 matrix/PAUSE 则暂停发布。
+# 紧急止血开关：存在 matrix/PAUSE 则暂停「发布」（渲染无外部副作用，照常进行，暂停期间继续补库存）。
 #   文件首个非注释行若是 YYYY-MM-DD 日期，则该日期(含)当天起自动恢复；
 #   没有可识别日期时视为无限期暂停，需手工删除文件才恢复（更安全）。
 PAUSE_FILE="$MATRIX/PAUSE"
-if [ -f "$PAUSE_FILE" ]; then
-  RESUME=$(grep -vE '^[[:space:]]*#' "$PAUSE_FILE" | grep -m1 -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' || true)
-  if [ -z "$RESUME" ] || [ "$DAY" \< "$RESUME" ]; then
-    echo "$(ts) ⏸ 发布已暂停（matrix/PAUSE，恢复日期：${RESUME:-未设置/需手工删除}）。" >> "$LOG"
-    exit 0
+paused(){
+  [ -f "$PAUSE_FILE" ] || return 1
+  local resume
+  resume=$(grep -vE '^[[:space:]]*#' "$PAUSE_FILE" | grep -m1 -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' || true)
+  if [ -z "$resume" ] || [ "$DAY" \< "$resume" ]; then
+    echo "$(ts) ⏸ 发布已暂停（matrix/PAUSE，恢复日期：${resume:-未设置/需手工删除}）；渲染照常。" >> "$LOG"
+    return 0
   fi
-  echo "$(ts) ▶ PAUSE 恢复日期 $RESUME 已到，继续发布（如未修复问题请删除或后移该日期）。" >> "$LOG"
-fi
+  echo "$(ts) ▶ PAUSE 恢复日期 $resume 已到，继续发布（如未修复问题请删除或后移该日期）。" >> "$LOG"
+  return 1
+}
 
 echo "$(ts) ========== 每日自动作业开始 ==========" >> "$LOG"
 
@@ -44,6 +47,11 @@ for f in "$MATRIX"/cuts/ep*.jsonl; do
   ep=$(basename "$f" .jsonl | sed 's/ep//')
   bash "$MATRIX/render_clips.sh" "$ep" >> "$LOG" 2>&1 || true
 done
+
+if paused; then
+  echo "$(ts) ========== 已暂停发布，仅渲染，作业结束 ==========" >> "$LOG"
+  exit 0
+fi
 
 IDS=$(grep "^$DAY[[:space:]]" "$MATRIX/schedule.txt" 2>/dev/null | awk '{print $2}')
 if [ -z "$IDS" ]; then
