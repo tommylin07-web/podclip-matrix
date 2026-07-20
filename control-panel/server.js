@@ -147,7 +147,8 @@ const server = http.createServer(async (req, res) => {
     if (!id || !platforms) return send(res, 400, { error: '缺 id/platforms' });
     const safeId = String(id).replace(/[^A-Za-z0-9_\-]/g, '');
     const safe = String(platforms).replace(/[^a-z,]/g, '');
-    const pid = runJob(`bash ${MATRIX}/publish_matrix.sh ${safeId} ${safe}`, 'publish', `发布 ${safeId} → ${safe}`);
+    // 手动点某平台是明确意图（发/重试/重发），用 FORCE=1 绕过"已成功则跳过"的幂等保护。
+    const pid = runJob(`FORCE=1 bash ${MATRIX}/publish_matrix.sh ${safeId} ${safe}`, 'publish', `发布 ${safeId} → ${safe}`);
     return send(res, 200, { ok: true, pid, msg: `已开始发布 ${safeId} → ${safe}，看「手动发布」日志` });
   }
 
